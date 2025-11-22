@@ -1,0 +1,69 @@
+replicaCount: 1
+
+image:
+  repository: myregistry/nodejs-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env: 
+  - name: NODE_ENV
+    value: production
+
+config:
+  LOG_LEVEL: info
+
+secret:
+  # put non-empty values at deploy time (do not commit secrets to repo)
+  db_password: "temp"
+
+livenessProbe:
+  path: /healthz
+  port: 3000
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  path: /ready
+  port: 3000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+rollingUpdate:
+  maxSurge: 25%
+  maxUnavailable: 25%
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  # target CPU utilization percentage for HPA (v2beta2/v2)
+  targetCPUUtilizationPercentage: 50
+
+podAnnotations: {}
+podLabels: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

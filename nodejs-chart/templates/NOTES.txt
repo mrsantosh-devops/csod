@@ -1,0 +1,13 @@
+1. Get application URL by running these commands:
+
+  kubectl get svc {{ include "nodejs-app.fullname" . }}
+
+2. To upgrade chart:
+  helm upgrade RELEASE_NAME ./nodejs-chart -f values.yaml
+
+3. To rollback a release to previous revision:
+  helm rollback RELEASE_NAME REVISION
+
+4. You can also use kubectl rollout:
+  kubectl rollout status deployment/{{ include "nodejs-app.fullname" . }}
+  kubectl rollout undo deployment/{{ include "nodejs-app.fullname" . }}
