@@ -1,0 +1,165 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "title": "Node.js App + Kubernetes Pod Metrics",
+  "tags": ["nodejs", "kubernetes", "prometheus"],
+  "timezone": "",
+  "panels": [
+
+    {
+      "type": "stat",
+      "title": "Total HTTP Requests",
+      "targets": [
+        {
+          "expr": "sum(http_requests_total)",
+          "legendFormat": "Total Requests"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 }
+    },
+
+    {
+      "type": "graph",
+      "title": "HTTP Requests Over Time",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total[2m])",
+          "legendFormat": "RPS"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 0, "w": 12, "h": 4 }
+    },
+
+    {
+      "type": "stat",
+      "title": "Event Loop Lag (avg)",
+      "targets": [
+        {
+          "expr": "avg(nodejs_eventloop_lag_seconds)",
+          "legendFormat": "lag"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 4, "w": 6, "h": 4 }
+    },
+
+    {
+      "type": "graph",
+      "title": "Event Loop Lag (percentiles)",
+      "targets": [
+        { "expr": "nodejs_eventloop_lag_p50_seconds", "legendFormat": "p50" },
+        { "expr": "nodejs_eventloop_lag_p90_seconds", "legendFormat": "p90" },
+        { "expr": "nodejs_eventloop_lag_p99_seconds", "legendFormat": "p99" }
+      ],
+      "gridPos": { "x": 6, "y": 4, "w": 12, "h": 4 }
+    },
+
+    {
+      "type": "graph",
+      "title": "CPU Usage (Node.js Process)",
+      "targets": [
+        {
+          "expr": "rate(process_cpu_seconds_total[1m])",
+          "legendFormat": "CPU seconds"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 5 }
+    },
+
+    {
+      "type": "graph",
+      "title": "Memory Usage (RSS + Heap)",
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes",
+          "legendFormat": "RSS"
+        },
+        {
+          "expr": "nodejs_heap_size_used_bytes",
+          "legendFormat": "Heap Used"
+        },
+        {
+          "expr": "nodejs_external_memory_bytes",
+          "legendFormat": "External"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 5 }
+    },
+
+    {
+      "type": "graph",
+      "title": "Garbage Collection Duration",
+      "targets": [
+        {
+          "expr": "rate(nodejs_gc_duration_seconds_sum[2m]) / rate(nodejs_gc_duration_seconds_count[2m])",
+          "legendFormat": "GC Avg Duration"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 13, "w": 12, "h": 5 }
+    },
+
+    {
+      "type": "graph",
+      "title": "Pod CPU Usage (Kubernetes)",
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{pod=~\"$pod\"}[2m])",
+          "legendFormat": "CPU"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 13, "w": 12, "h": 5 }
+    },
+
+    {
+      "type": "graph",
+      "title": "Pod Memory Usage (Kubernetes)",
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{pod=~\"$pod\"}",
+          "legendFormat": "Memory"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 18, "w": 12, "h": 5 }
+    },
+
+    {
+      "type": "graph",
+      "title": "Pod Restart Count",
+      "targets": [
+        {
+          "expr": "kube_pod_container_status_restarts_total{pod=~\"$pod\"}",
+          "legendFormat": "Restarts"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 18, "w": 12, "h": 5 }
+    }
+  ],
+
+  "templating": {
+    "list": [
+      {
+        "name": "pod",
+        "type": "query",
+        "datasource": "Prometheus",
+        "label": "Pod",
+        "query": "label_values(kube_pod_info, pod)",
+        "refresh": 1,
+        "sort": 2
+      }
+    ]
+  },
+
+  "schemaVersion": 27,
+  "version": 1
+}

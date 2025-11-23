@@ -57,8 +57,12 @@ autoscaling:
   # target CPU utilization percentage for HPA (v2beta2/v2)
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
+  
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/metrics"
+  prometheus.io/port: "3001"
 
-podAnnotations: {}
 podLabels: {}
 
 nodeSelector: {}

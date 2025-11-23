@@ -1,6 +1,41 @@
 const express = require('express');
 const app = express();
 
+// ===== Prometheus Setup =====
+const client = require('prom-client');
+client.collectDefaultMetrics(); // Node.js metrics
+
+// Custom metric: Count HTTP requests
+const httpRequestCounter = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status']
+});
+
+// Middleware to count requests
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestCounter.inc({
+      method: req.method,
+      route: req.path,
+      status: res.statusCode
+    });
+  });
+  next();
+});
+
+// /metrics endpoint
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+// ===== Your App Code (UNCHANGED, only formatted) =====
+
 // Get configuration from environment variables
 const PORT = process.env.PORT || 3000;
 const APP_NAME = process.env.APP_NAME || 'CSOD App';
@@ -65,10 +100,9 @@ app.get('/test/api', (req, res) => {
     message: "API credentials test",
     api_key_length: API_KEY.length,
     api_secret_length: API_SECRET.length,
-    status:
-      API_KEY !== "not-set" && API_SECRET !== "not-set"
-        ? "configured"
-        : "not configured",
+    status: API_KEY !== "not-set" && API_SECRET !== "not-set"
+      ? "configured"
+      : "not configured",
   });
 });
 
