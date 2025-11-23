@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 
 // Get configuration from environment variables
-// These will come from ConfigMap and Secret in Kubernetes
 const PORT = process.env.PORT || 3000;
 const APP_NAME = process.env.APP_NAME || 'CSOD App';
 const ENVIRONMENT = process.env.ENVIRONMENT || 'development';
@@ -17,14 +16,14 @@ app.use((req, res, next) => {
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req, res) =>
   res.status(200).json({
     status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
-});
+    timestamp: new Date().toISOString(),
+  })
+);
 
-// Main test endpoint at /test
+// Main test endpoint
 app.get('/test', (req, res) => {
   res.status(200).json({
     message: 'Test endpoint working!',
@@ -35,91 +34,59 @@ app.get('/test', (req, res) => {
       port: PORT,
       database_url_set: DATABASE_URL !== 'not-set',
       api_key_set: API_KEY !== 'not-set',
-      api_secret_set: API_SECRET !== 'not-set'
+      api_secret_set: API_SECRET !== 'not-set',
     },
     headers: req.headers,
-    query: req.query
+    query: req.query,
   });
 });
 
-// Test POST endpoint
+// POST example
 app.post('/test', express.json(), (req, res) => {
   res.status(200).json({
-    message: 'POST request received',
+    message: "POST request received",
     body: req.body,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Test database connection endpoint
+// DB test
 app.get('/test/db', (req, res) => {
   res.status(200).json({
-    message: 'Database connection test',
-    database_url: DATABASE_URL.substring(0, 20) + '...', // Show only first 20 chars for security
-    status: DATABASE_URL !== 'not-set' ? 'configured' : 'not configured'
+    message: "Database connection test",
+    database_url: DATABASE_URL.substring(0, 20) + "...",
+    status: DATABASE_URL !== "not-set" ? "configured" : "not configured",
   });
 });
 
-// Test API credentials endpoint
+// API credentials test
 app.get('/test/api', (req, res) => {
   res.status(200).json({
-    message: 'API credentials test',
+    message: "API credentials test",
     api_key_length: API_KEY.length,
     api_secret_length: API_SECRET.length,
-    status: API_KEY !== 'not-set' && API_SECRET !== 'not-set' ? 'configured' : 'not configured'
+    status:
+      API_KEY !== "not-set" && API_SECRET !== "not-set"
+        ? "configured"
+        : "not configured",
   });
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((req, res) =>
   res.status(404).json({
     error: 'Not Found',
     path: req.path,
-    message: 'The requested endpoint does not exist'
-  });
-});
+    message: 'The requested endpoint does not exist',
+  })
+);
 
 // Error handler
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
+app.use((err, req, res, next) =>
   res.status(500).json({
     error: 'Internal Server Error',
-    message: err.message
-  });
-});
+    message: err.message,
+  })
+);
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('='.repeat(60));
-  console.log(`${APP_NAME} started successfully`);
-  console.log(`Environment: ${ENVIRONMENT}`);
-  console.log(`Port: ${PORT}`);
-  console.log(`Time: ${new Date().toISOString()}`);
-  console.log('='.repeat(60));
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
-  process.exit(0);
-});
-
-module.exports = app; // export app for testing
-
-// Start server only if not in test mode
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log('='.repeat(60));
-    console.log(`${APP_NAME} started successfully`);
-    console.log(`Environment: ${ENVIRONMENT}`);
-    console.log(`Port: ${PORT}`);
-    console.log(`Time: ${new Date().toISOString()}`);
-    console.log('='.repeat(60));
-  });
-}
-
+module.exports = app; // exported for supertest
