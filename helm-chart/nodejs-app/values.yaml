@@ -28,12 +28,8 @@ env:
 config:
   LOG_LEVEL: info
 
-secret:
-  # put non-empty values at deploy time (do not commit secrets to repo)
-  db_password: "temp"
-
 livenessProbe:
-  path: /healthz
+  path: /test
   port: 3000
   initialDelaySeconds: 15
   periodSeconds: 10
@@ -42,7 +38,7 @@ livenessProbe:
   successThreshold: 1
 
 readinessProbe:
-  path: /ready
+  path: /test
   port: 3000
   initialDelaySeconds: 5
   periodSeconds: 5
@@ -59,7 +55,8 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 10
   # target CPU utilization percentage for HPA (v2beta2/v2)
-  targetCPUUtilizationPercentage: 50
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
 podAnnotations: {}
 podLabels: {}

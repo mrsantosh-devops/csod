@@ -42,16 +42,11 @@ spec:
             - name: {{ .name }}
               value: {{ .value | quote }}
             {{- end }}
-            - name: CONFIG_FROM_CM
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "nodejs-app.fullname" . }}
-                  key: LOG_LEVEL
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "nodejs-app.fullname" . }}-secret
-                  key: db_password
+          envFrom:
+            - configMapRef:
+                name:  {{ include "nodejs-app.fullname" . }}-config
+            - secretRef:
+                name: {{ include "nodejs-app.fullname" . }}-secret
           readinessProbe:
             httpGet:
               path: {{ .Values.readinessProbe.path }}
