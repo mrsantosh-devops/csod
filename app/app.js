@@ -108,3 +108,18 @@ process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully...');
   process.exit(0);
 });
+
+module.exports = app; // export app for testing
+
+// Start server only if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log('='.repeat(60));
+    console.log(`${APP_NAME} started successfully`);
+    console.log(`Environment: ${ENVIRONMENT}`);
+    console.log(`Port: ${PORT}`);
+    console.log(`Time: ${new Date().toISOString()}`);
+    console.log('='.repeat(60));
+  });
+}
+
