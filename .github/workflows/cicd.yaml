@@ -9,7 +9,7 @@ env:
   ECR_REGISTRY: 539994124393.dkr.ecr.us-east-1.amazonaws.com
   IMAGE_NAME: csod-node
   NAMESPACE: csod-prod
-  HELM_CHART_PATH: helm-chart/nodejs-app
+  HELM_CHART: helm-chart       
   RELEASE_NAME: csod-node
 
 jobs:
@@ -23,7 +23,6 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v4
-        working-directory: ./app
         with:
           node-version: 18
 
@@ -57,14 +56,13 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t $ECR_REGISTRY/$IMAGE_NAME:${{ github.sha }} .
+          IMAGE_TAG="latest-${{ github.sha }}"
+          docker build -t $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Push Docker Image
         run: |
-          docker push $ECR_REGISTRY/$IMAGE_NAME:${{ github.sha }}
-
-      - name: Export IMAGE_TAG
-        run: echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+          docker push $ECR_REGISTRY/$IMAGE_NAME:${{ env.IMAGE_TAG }}
 
 
   deploy:
@@ -73,7 +71,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - uses: actions/checkout@v4
 
       - name: AWS Credentials
@@ -97,7 +94,7 @@ jobs:
 
       - name: Deploy Application Using Helm
         run: |
-          helm upgrade --install $RELEASE_NAME $HELM_CHART_PATH \
+          helm upgrade --install $RELEASE_NAME helm-chart/$HELM_CHART \
             --namespace $NAMESPACE \
             --set image.repository=$ECR_REGISTRY/$IMAGE_NAME \
             --set image.tag=${{ env.IMAGE_TAG }} \
@@ -105,4 +102,4 @@ jobs:
 
       - name: Verify Rollout
         run: |
-          kubectl -n $NAMESPACE rollout status deployment/$RELEASE_NAME
+          kubectl rollout status deployment/$RELEASE_NAME -n $NAMESPACE
