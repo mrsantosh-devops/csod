@@ -32,7 +32,7 @@ jobs:
         working-directory: ./app
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --forceExit
         working-directory: ./app
 
 
