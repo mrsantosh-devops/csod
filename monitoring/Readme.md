@@ -1,7 +1,4 @@
 
-
-Here is a clean, step-by-step guide based on your commands:
-
 ---
 
 ### **Monitoring Setup Guide**
@@ -44,5 +41,3 @@ kubectl patch svc kube-prom-grafana -n monitoring \
 - Upload or paste the JSON file for the desired dashboard
 
 ---
-
-Let me know if you want this in Markdown, PDF, or ready to add to Confluence!
