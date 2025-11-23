@@ -8,9 +8,10 @@ env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: 539994124393.dkr.ecr.us-east-1.amazonaws.com
   IMAGE_NAME: csod-node
+  IMAGE_TAG: ${{ github.sha }}
   NAMESPACE: csod-prod
   HELM_CHART: helm-chart/nodejs-app      
-  RELEASE_NAME: csod-node
+  RELEASE_NAME: node-app
 
 jobs:
 
@@ -58,7 +59,6 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          IMAGE_TAG="latest-${{ github.sha }}"
           docker build -t $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG ./app
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
