@@ -9,7 +9,7 @@ env:
   ECR_REGISTRY: 539994124393.dkr.ecr.us-east-1.amazonaws.com
   IMAGE_NAME: csod-node
   NAMESPACE: csod-prod
-  HELM_CHART: helm-chart       
+  HELM_CHART: nodejs-app      
   RELEASE_NAME: csod-node
 
 jobs:
