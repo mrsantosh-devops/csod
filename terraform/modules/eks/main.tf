@@ -1,3 +1,13 @@
+
+resource "aws_kms_key" "eks" {
+  description             = "KMS key for EKS secrets encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = var.tags
+}
+
+
 # EKS Cluster IAM Role
 resource "aws_iam_role" "eks_cluster" {
   name = "eks-cluster-${var.cluster_name}"
@@ -32,10 +42,10 @@ resource "aws_eks_cluster" "cluster" {
   vpc_config {
     subnet_ids              = concat(var.private_subnet_ids, var.public_subnet_ids)
     endpoint_private_access = true
-    endpoint_public_access  = false
+    endpoint_public_access  = true
   }
 
-  # ✅ Enable secret encryption
+  # Enable secret encryption
   encryption_config {
     resources = ["secrets"]
     provider {

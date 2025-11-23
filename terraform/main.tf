@@ -1,10 +1,4 @@
 terraform {
-  backend "s3" {
-    bucket  = "terraform-state-bucket-node-csod" # replace with your bucket name
-    key     = "csod/terraform.tfstate"           # path inside the bucket
-    region  = "us-east-1"                        # your AWS region
-    encrypt = true                               # encrypt the state at rest
-  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -12,6 +6,7 @@ terraform {
     }
   }
 }
+
 
 provider "aws" {
   region = var.aws_region
@@ -56,13 +51,11 @@ module "ecr" {
   repository_name = "csod-node"
 }
 
-# S3 backend bootstrap module (creates S3 bucket only)
-module "backend_bootstrap" {
+module "data_bucket" {
   source = "./modules/s3"
 
-  backend_bucket           = var.backend_bucket
-  region                   = var.aws_region
-  tags                     = var.common_tags
-  create_backend_resources = var.create_backend_resources
+  bucket_name = var.data_bucket_name
+  versioning  = var.data_bucket_versioning
+  tags        = var.common_tags
 }
 

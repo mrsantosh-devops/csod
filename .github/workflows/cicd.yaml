@@ -1,0 +1,108 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["test"]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 539994124393.dkr.ecr.us-east-1.amazonaws.com
+  IMAGE_NAME: csod-node
+  NAMESPACE: csod-prod
+  HELM_CHART_PATH: helm-chart/nodejs-app
+  RELEASE_NAME: csod-node
+
+jobs:
+
+  build_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        working-directory: ./app
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+
+  docker_build_push:
+    name: Build & Push Docker Image to ECR
+    needs: build_test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $ECR_REGISTRY/$IMAGE_NAME:${{ github.sha }} .
+
+      - name: Push Docker Image
+        run: |
+          docker push $ECR_REGISTRY/$IMAGE_NAME:${{ github.sha }}
+
+      - name: Export IMAGE_TAG
+        run: echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+
+
+  deploy:
+    name: Deploy Using Helm to EKS
+    needs: docker_build_push
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name csod-prod
+
+      - name: Deploy Application Using Helm
+        run: |
+          helm upgrade --install $RELEASE_NAME $HELM_CHART_PATH \
+            --namespace $NAMESPACE \
+            --set image.repository=$ECR_REGISTRY/$IMAGE_NAME \
+            --set image.tag=${{ env.IMAGE_TAG }} \
+            --wait --timeout 5m
+
+      - name: Verify Rollout
+        run: |
+          kubectl -n $NAMESPACE rollout status deployment/$RELEASE_NAME

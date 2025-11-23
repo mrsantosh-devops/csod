@@ -1,4 +1,4 @@
-resource "aws_ecr_repository" "this" {
+resource "aws_ecr_repository" "s3_bucket" {
   name                 = var.repository_name
   image_tag_mutability = var.image_tag_mutability
   force_delete         = var.force_delete

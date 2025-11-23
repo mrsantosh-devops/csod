@@ -1,21 +1,14 @@
-variable "backend_bucket" {
-  description = "S3 bucket name for Terraform state"
-  type        = string
+variable "bucket_name" {
+  type = string
+
 }
 
-variable "create_backend_resources" {
-  description = "If true, create S3 backend bucket"
-  type        = bool
-  default     = false
-}
-
-variable "region" {
-  description = "AWS region"
-  type        = string
+variable "versioning" {
+  type    = bool
+  default = false
 }
 
 variable "tags" {
-  description = "Tags for S3 bucket"
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }

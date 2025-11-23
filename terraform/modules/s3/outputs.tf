@@ -1,4 +1,7 @@
 output "bucket_id" {
-  value       = try(aws_s3_bucket.state_bucket[0].id, null)
-  description = "S3 bucket ID (if created)"
+  value = aws_s3_bucket.s3_bucket.id
+}
+
+output "bucket_arn" {
+  value = aws_s3_bucket.s3_bucket.arn
 }

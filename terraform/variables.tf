@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "cluster_name" {
   description = "Name of the EKS cluster"
   type        = string
-  default     = "prod-eks"
+  default     = "csod-prod"
 }
 
 variable "cluster_version" {
@@ -56,7 +56,7 @@ variable "node_groups" {
       desired_size   = 1
       max_size       = 2
       min_size       = 1
-      instance_types = ["m4.xlarge"]
+      instance_types = ["t3.medium"]
       capacity_type  = "ON_DEMAND"
       disk_size      = 128
       labels = {
@@ -76,19 +76,14 @@ variable "common_tags" {
   }
 }
 
-variable "backend_bucket" {
-  description = "S3 bucket to store Terraform backend state"
+variable "data_bucket_name" {
+  description = "S3 bucket for storing application data"
   type        = string
+  default     = "csod-app-data-bucket"
 }
 
-variable "backend_key" {
-  description = "S3 key (path) for Terraform state file"
-  type        = string
-  default     = "terraform.tfstate"
-}
-
-variable "create_backend_resources" {
-  description = "If true, S3 bucket will be created (bootstrap run)"
+variable "data_bucket_versioning" {
+  description = "Enable versioning for the data bucket"
   type        = bool
-  default     = false
+  default     = true
 }

@@ -1,0 +1,93 @@
+########################################
+# TERRAFORM
+########################################
+
+# Local terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+tfplan
+plan.out
+
+# Crash logs
+crash.log
+crash.*
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variable files
+*.tfvars
+*.tfvars.json
+secret.tfvars
+*.auto.tfvars
+
+########################################
+# NODEJS BACKEND
+########################################
+
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+
+# Build output
+dist/
+build/
+coverage/
+.cache/
+.next/
+.nuxt/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# PM2 Logs
+.pids
+*.pid
+*.seed
+
+# OS/System files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+########################################
+# GENERAL EXCLUDES
+########################################
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+

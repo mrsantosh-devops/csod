@@ -1,19 +1,13 @@
-resource "aws_s3_bucket" "state_bucket" {
-  count  = var.create_backend_resources ? 1 : 0
-  bucket = var.backend_bucket
-  acl    = "private"
+resource "aws_s3_bucket" "s3_bucket" {
+  bucket = var.bucket_name
 
-  versioning {
-    enabled = true
+  tags = var.tags
+}
+
+resource "aws_s3_bucket_versioning" "s3_bucket" {
+  bucket = aws_s3_bucket.s3_bucket.id
+
+  versioning_configuration {
+    status = var.versioning ? "Enabled" : "Suspended"
   }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
-  tags = merge(var.tags, { Name = var.backend_bucket })
 }

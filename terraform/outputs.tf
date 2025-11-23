@@ -32,3 +32,13 @@ output "eks_cluster_security_group_id" {
   description = "EKS cluster security group ID"
   value       = module.eks.cluster_security_group_id
 }
+
+output "data_bucket_id" {
+  description = "ID (name) of the S3 data bucket"
+  value       = module.data_bucket.bucket_id
+}
+
+output "data_bucket_arn" {
+  description = "ARN of the S3 data bucket"
+  value       = module.data_bucket.bucket_arn
+}
