@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: myregistry/nodejs-app
+  repository: 539994124393.dkr.ecr.us-east-1.amazonaws.com/csod-node
   tag: latest
   pullPolicy: IfNotPresent
 
