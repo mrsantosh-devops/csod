@@ -1,0 +1,147 @@
+---
+# Source: nodejs-app/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: node-app-nodejs-app-secret
+  labels:
+    app.kubernetes.io/name: nodejs-app
+    app.kubernetes.io/instance: node-app
+type: Opaque
+stringData:
+  # example: db_password: "temp"
+  db_password: "temp"
+---
+# Source: nodejs-app/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-app-nodejs-app-config
+  labels:
+    app.kubernetes.io/name: nodejs-app
+    app.kubernetes.io/instance: node-app
+data:
+  LOG_LEVEL: "info"
+---
+# Source: nodejs-app/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-app-nodejs-app
+  labels:
+    app.kubernetes.io/name: nodejs-app
+    app.kubernetes.io/instance: node-app
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: nodejs-app
+    app.kubernetes.io/instance: node-app
+---
+# Source: nodejs-app/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app-nodejs-app
+  labels:
+    app.kubernetes.io/name: nodejs-app
+    app.kubernetes.io/instance: node-app
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nodejs-app
+      app.kubernetes.io/instance: node-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nodejs-app
+        app.kubernetes.io/instance: node-app
+      annotations:
+        {}
+    spec:
+      nodeSelector: 
+        {}
+      tolerations: 
+        []
+      affinity: 
+        {}
+      containers:
+        - name: nodejs
+          image: "myregistry/nodejs-app:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: CONFIG_FROM_CM
+              valueFrom:
+                configMapKeyRef:
+                  name: node-app-nodejs-app
+                  key: LOG_LEVEL
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: node-app-nodejs-app-secret
+                  key: db_password
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+      imagePullSecrets: []
+---
+# Source: nodejs-app/templates/hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: node-app-nodejs-app-hpa
+  labels:
+    app.kubernetes.io/name: nodejs-app
+    app.kubernetes.io/instance: node-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: node-app-nodejs-app
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
