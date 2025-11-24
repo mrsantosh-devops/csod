@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: ["test"]
+    branches: ["main"]
 
 env:
   AWS_REGION: us-east-1
